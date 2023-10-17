@@ -3,7 +3,7 @@
 🤖 Welcome to ProChat, An OpenAI powered Chatbot for Android.
 
 # Instructions 
-Open this project on Android Studio, And Use your API key here:
+Open this project on Android Studio, And Use your API key in API.java file.
 
 Without API key this app can't work.
 
