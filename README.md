@@ -1,6 +1,6 @@
 # ProChat - An Android AI Chatbot
 
-🤖 SWelcome to ProChat, An OpenAI powered Chatbot for Android.
+🤖 Welcome to ProChat, An OpenAI powered Chatbot for Android.
 
 # Instructions 
 Open this project on Android Studio, And Use your API key here:
