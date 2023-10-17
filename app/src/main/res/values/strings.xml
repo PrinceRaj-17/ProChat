@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">ProChat</string>
+    <string name="app_hint">Welcome to ProChat!\nAsk me anything.</string>
+</resources>
