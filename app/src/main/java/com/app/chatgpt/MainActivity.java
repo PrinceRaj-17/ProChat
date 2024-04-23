@@ -125,57 +125,61 @@ public class MainActivity extends AppCompatActivity {
 
         JSONObject jsonBody = new JSONObject();
         try {
-            jsonBody.put("model","text-davinci-003");
-            jsonBody.put("prompt", question);
-            jsonBody.put("max_tokens",4000);
-            jsonBody.put("temperature",0);
+            jsonBody.put("model","gpt-3.5-turbo");
+            jsonBody.put("messages", new JSONArray()
+                    .put(new JSONObject().put("role", "user").put("content", question)));
         } catch (JSONException e) {
             throw new RuntimeException(e);
         }
 
-        RequestBody requestBody = RequestBody.create(jsonBody.toString(),JSON);
+        RequestBody requestBody = RequestBody.create(jsonBody.toString(), JSON);
         Request request = new Request.Builder()
-                .url(API.API_URL)
-                .header("Authorization","Bearer "+API.API)
+                .url("https://api.openai.com/v1/chat/completions")
+                .header("Authorization", "Bearer " + API.API)
+                .header("Content-Type", "application/json")
                 .post(requestBody)
                 .build();
 
         client.newCall(request).enqueue(new Callback() {
             @Override
             public void onFailure(@NonNull Call call, @NonNull IOException e) {
-                addResponse("Failed to load response due to"+e.getMessage());
+                addResponse("Failed to load response due to " + e.getMessage());
             }
 
             @Override
             public void onResponse(@NonNull Call call, @NonNull Response response) throws IOException {
-                if (response.isSuccessful()){
-                    JSONObject jsonObject = null;
-                    try {
-                        jsonObject = new JSONObject(response.body().string());
-                        JSONArray jsonArray = jsonObject.getJSONArray("choices");
-                        String result = jsonArray.getJSONObject(0).getString("text");
-                        addResponse(result.trim());
-                    } catch (JSONException e) {
-                        throw new RuntimeException(e);
+                try {
+                    if (response.isSuccessful()) {
+                        JSONObject jsonObject = new JSONObject(response.body().string());
+                        JSONArray choices = jsonObject.getJSONArray("choices");
+                        JSONObject completion = choices.getJSONObject(0);
+                        JSONObject message = completion.getJSONObject("message");
+                        String assistantResponse = message.getString("content");
+                        addResponse(assistantResponse);
+                    } else {
+                        addResponse("Failed to load response due to " + response.body().string());
                     }
-                } else {
-                    addResponse("Failed to load response due to"+response.body().toString());
+                } catch (JSONException e) {
+                    throw new RuntimeException(e);
+                } finally {
+                    if (response.body() != null) {
+                        response.body().close(); // Close the response body
+                    }
                 }
-
             }
         });
-
     } // callAPI End Here =============
 
     public boolean isConnected(Context context){
-        ConnectivityManager manager = (ConnectivityManager) context.getSystemService(context.CONNECTIVITY_SERVICE);
+        ConnectivityManager manager = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo info= manager.getActiveNetworkInfo();
         if(info!= null && info.isConnectedOrConnecting()){
-            android.net.NetworkInfo wifi= manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
-            android.net.NetworkInfo mobile= manager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+            NetworkInfo wifi= manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
+            NetworkInfo mobile= manager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
             if((mobile != null && mobile.isConnectedOrConnecting()) || (wifi != null && wifi.isConnectedOrConnecting()))
                 return true;
-            else return false;
+            else
+                return false;
         } else
             return false;
     }
